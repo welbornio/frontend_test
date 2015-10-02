@@ -13,12 +13,12 @@
 <div id="content">
 	<h1><span class="red">Text</span> Search</h1>
 	<p>
-		There are two main components below, a search form and a text article about turtles. The form should be setup such that a word or phase can be entered in the search form, and the number of occurences of that phrase is shown below. 
+		There are two main components below, a search form and a text article about turtles. The form should be setup such that a word or phase can be entered in the search form, and the number of occurrences of that phrase is shown below. 
 	</p>
 	<p>
-		For example, in the below text there are two occurences of the word "Testudines" so if you put that word in the search form, and submit, the results should say:
+		For example, in the below text there are two occurrence of the word "Testudines" so if you put that word in the search form, and submit, the results should say:
 
-		<i>Found 2 occurances of the word "Testudines" in the below text.</i>
+		<i>Found 2 occurrence of the word "Testudines" in the below text.</i>
 	</p>
 	<p>
 		Keep in mind that words can be contained within multiple levels of HTML elements, and phrases may cross those HTML element boundaries.
@@ -33,7 +33,7 @@
 	</form>
 
 	<h3>Results</h3>
-	Found 0 occurances of the word "llama" in the below text.
+	<p id="results_text">Found 0 occurrences of the word "llama" in the below text.</p>
 
 	<hr/>
 
@@ -53,6 +53,112 @@
 		</p>
 	</div>
 </div>
+
+<script>
+	(function() {
+		'use strict';
+
+		var $textContent = document.getElementById('search_text');
+		var $searchInput = document.getElementById('search_input');
+		var $searchSubmit = document.querySelector("input[type='submit']");
+		var $resultsArea = document.getElementById('results_text');
+
+		// Remove newlines/tabs/excessive whitespace from our content
+		// Also remove the citations, trim the content, and use all
+		// lowercase letters so we are not case sensitive
+		var content = $textContent.textContent
+			.replace(/(\s\s+)/gm, " ")
+			.replace(/(\[\d\])/gm, "")
+			.toLowerCase()
+			.trim();
+
+
+		// Bind the submit click to our search function
+		$searchSubmit.addEventListener('click', submitClickHandler);
+
+		/**
+		 * Update the results area with sone content
+		 * @param str The result of the search
+		 */
+		function displayResults(str) {
+			$resultsArea.textContent = str;
+		}
+
+		/**
+		 * Our handler for a submit click
+		 * @param event Click event
+		 */
+		function submitClickHandler(event) {
+			var originalKeyword = $searchInput.value.trim();
+			var keyword = originalKeyword.toLowerCase();
+			var index = -1;
+			var plurality = 'occurrences';
+			var keywordType = 'word';
+			var counter;
+
+			// Prevent the form submit
+			event.preventDefault();
+
+
+			// If our keyword is just whitespace, notify the user and return
+			if(!keyword.length) {
+				return displayResults('Please provide some text to search for.');
+			}
+
+			counter = findOccurrences(keyword, content);
+
+			// If our keyword contains a space, dub it a "phrase"
+			if(keyword.indexOf(' ') > -1) {
+				keywordType = 'phrase';
+			}
+
+			// If there is exactly one occurrence, modify the grammar
+			if(counter === 1) {
+				plurality = 'occurrence';
+			}
+
+			// Update the view with the results
+			displayResults(
+				'Found ' +
+				counter +
+				' ' + plurality + ' ' +
+				'of the ' +
+				keywordType + ' "' +
+				originalKeyword +
+				'" in the below text.'
+			);
+		}
+
+		/**
+		 * Find the number of occurences of a string in our content
+		 * @param keyword Keyword to search for
+		 * @param content Content to search through
+		 */
+		function findOccurrences(keyword, content) {
+			var counter = 0;
+			var index;
+
+			if(keyword.length && content.length) {
+				// Find all occurrences of the keyword
+				while((index = content.indexOf(keyword, index + 1)) > -1) {
+					counter++;
+				}
+			}
+
+			return counter;
+		}
+
+		// Quick unit test
+		if(
+			findOccurrences('1', '123411231121121322311') !== 10 ||
+			findOccurrences('', '0') !== 0 ||
+			findOccurrences('e', '') !== 0
+		) {
+			throw "findOccurrences exception"
+		}
+
+	})();
+</script>
 
 </body>
 </html>
