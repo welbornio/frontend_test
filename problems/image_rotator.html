@@ -45,6 +45,20 @@
             top: 0;
             font-size: 25px;
         }
+
+        #rotator .go-left, #rotator .go-right {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        #rotator .go-right {
+            left: inherit;
+            right: 20px;
+        }
 	</style>
 </head>
 <body>
@@ -94,10 +108,6 @@
 
 	<div id="rotator">
 		Rotator Here
-
-        <h4>im a title</h4>
-        <p>Im some content</p>
-        <img src="../img/kat_4.jpg" /><br/>
 	</div>
 </div>
 
@@ -133,17 +143,42 @@
             this.slides = slides;
             this.container = container;
             this.index = 0;
+            this.timeout = null;
+            this.autoRoll = true;
 
             // Content elements
             this.img = document.createElement('img');
             this.title = document.createElement('h4');
             this.blurb = document.createElement('p');
+            var goRight = document.createElement('a');
+            goRight.className = 'go-right';
+            goRight.innerHTML = '&raquo;';
+            var goLeft = document.createElement('a');
+            goLeft.className = 'go-left';
+            goLeft.innerHTML = '&laquo;';
+
+            // Set up click binds for right and left
+            goLeft.addEventListener('click', function() {
+                // Cancel the auto-rolling
+                clearTimeout(this.timeout);
+                this.autoRoll = false;
+                this.goLeftOne.call(this);
+            }.bind(this));
+
+            goRight.addEventListener('click', function() {
+                // Cancel the auto-rolling
+                clearTimeout(this.timeout);
+                this.autoRoll = false;
+                this.goRightOne.call(this);
+            }.bind(this));
 
             // Set up the rotator HTML
             this.container.innerHTML = '';
             this.container.appendChild(this.img);
             this.container.appendChild(this.title);
             this.container.appendChild(this.blurb);
+            this.container.appendChild(goRight);
+            this.container.appendChild(goLeft);
 
             // When an image successfully loads, call slideIn
             this.img.onload = this.slideIn.bind(this);
@@ -151,6 +186,28 @@
             // Set the src to kick off our first slideIn
             this.img.src = this.slides[this.index].img;
         }
+
+        /**
+         * Go one image to the left in our rotator
+         */
+        Rotator.prototype.goLeftOne = function() {
+            this.index--;
+            if(this.index < 0) {
+                this.index = this.slides.length - 1;
+            }
+            this.slideOut();
+        };
+
+        /**
+         * Go one image to the right in our rotator
+         */
+        Rotator.prototype.goRightOne = function() {
+            this.index++;
+            if(this.index >= this.slides.length) {
+                this.index = 0;
+            }
+            this.slideOut();
+        };
 
         /**
          * Slide in our next slide. Set content opacity back to 1, and
@@ -170,7 +227,9 @@
             this.blurb.style.opacity = 1.0;
 
             // Slide out this image
-            setTimeout(this.slideOut.bind(this), 3000);
+            if(this.autoRoll) {
+                this.timeout = setTimeout(this.goRightOne.bind(this), 3000);
+            }
         };
 
         /**
@@ -187,12 +246,8 @@
             this.blurb.style.opacity = 0;
 
             // Allow the animations to play for 500ms, and then load our next image.
-            // After it loads, it should kick off the next slideIn
+            // If we are on ie9, don't wait the 500ms
             setTimeout(function() {
-                this.index++;
-                if(this.index >= this.slides.length) {
-                    this.index = 0;
-                }
                 this.img.src = this.slides[this.index].img;
             }.bind(this), isIE9 ? 0 : 500);
         };
