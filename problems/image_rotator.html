@@ -121,6 +121,7 @@
         var $rotator = document.getElementById('rotator');
         var isIE9 = document.getElementById('ie9') !== null;
 
+        // Create an array of slide data
         Array.prototype.forEach.call($slides, function(slide) {
             slideGroup.push({
                 title: slide.querySelector('h4').innerHTML,
@@ -129,11 +130,18 @@
             });
         });
 
+        // When the window loads, create our rotator
         window.onload = function() {
-            new Rotator(slideGroup, $rotator);
+            new Rotator(slideGroup, $rotator, isIE9);
         };
 
-        function Rotator(slides, container) {
+        /**
+         * Rotator constructor. Initialize some vars and setup the container
+         * @param slides Array of slide data
+         * @param container Rotator container
+         * @param isIE9 If this browser is IE9
+         */
+        function Rotator(slides, container, isIE9) {
 
             // Return if we've got no slides
             if(!slides.length) {
@@ -145,6 +153,7 @@
             this.index = 0;
             this.timeout = null;
             this.autoRoll = true;
+            this.isIE9 = Boolean(isIE9);
 
             // Content elements
             this.img = document.createElement('img');
@@ -182,9 +191,7 @@
 
             // When an image successfully loads, call slideIn
             this.img.onload = this.slideIn.bind(this);
-
-            // Set the src to kick off our first slideIn
-            this.img.src = this.slides[this.index].img;
+            this.slideOut();
         }
 
         /**
@@ -249,7 +256,7 @@
             // If we are on ie9, don't wait the 500ms
             setTimeout(function() {
                 this.img.src = this.slides[this.index].img;
-            }.bind(this), isIE9 ? 0 : 500);
+            }.bind(this), this.isIE9 ? 0 : 500);
         };
 
     })();
