@@ -1,5 +1,10 @@
 <!doctype html>
+<!--[if IE 9]>
+<html id="ie9">
+<![endif]-->
+<!--[if !IE]> -->
 <html>
+<!-- <![endif]-->
 <head>
 	<title>Frontend Coding Test</title>
 	<link type="text/css" rel="stylesheet" href="../css/style.css" />
@@ -104,6 +109,7 @@
         var slideGroup = [];
         var $slides = document.getElementsByClassName('slide');
         var $rotator = document.getElementById('rotator');
+        var isIE9 = document.getElementById('ie9') !== null;
 
         Array.prototype.forEach.call($slides, function(slide) {
             slideGroup.push({
@@ -188,7 +194,7 @@
                     this.index = 0;
                 }
                 this.img.src = this.slides[this.index].img;
-            }.bind(this), 500);
+            }.bind(this), isIE9 ? 0 : 500);
         };
 
     })();
